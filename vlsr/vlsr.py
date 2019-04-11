@@ -14,7 +14,8 @@ def calculate_lsr_correction(obsdir, obsloc, obstime):
     Returns
     -------
     vlsr_corr : float
-       the velocity of LSR in respect of observatory???
+       the velocity of LSR in respect of observatory??? in direction of
+       the obsdir 
     '''
 
     #from astropy.coordinates import SkyCoord, EarthLocation

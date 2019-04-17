@@ -71,7 +71,8 @@ class Spectrum():
         
         Returns
         -------
-        spect_shifted : an instance of Spectrum with shifted x axes
+        spect_shifted : Spectrum
+            A Spectrum with shifted x axes
         '''
         if 'restfreq' not in self.__dict__:
             raise ValueError('No rest frequency')
@@ -83,7 +84,21 @@ class Spectrum():
 
         return spec_shifted
 
+    
+    def regrid(x1):
+    '''
+    Parameters
+    ----------
+    x1 : '~numpy.ndarray'
+        The frequency or velocity range that the spectrum is to be regridded
+        to
 
+    Returns
+    -------
+    spec1 : Spectrum
+        A Spectrum  
+    '''
+    #def smooth():
     #def interpolate():
 
 

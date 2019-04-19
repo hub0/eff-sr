@@ -1,6 +1,7 @@
 import numpy as np
 import astropy.units as u
 import astropy.constants as const
+from scipy import interpolate
 
 __all__ = ['Spectrum']
 
@@ -85,19 +86,37 @@ class Spectrum():
         return spec_shifted
 
     
-    def regrid(x1):
+    def regrid(self, x1, kind='linear'):
     '''
     Parameters
     ----------
     x1 : '~numpy.ndarray'
         The frequency or velocity range that the spectrum is to be regridded
         to
+    kind : string
+        kind of scipy.interpolate
+        Specifies the kind of interpolation as a string (‘linear’, ‘nearest’, ‘zero’, 
+        ‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’, ‘next’, where ‘zero’, ‘slinear’, 
+        ‘quadratic’ and ‘cubic’ refer to a spline interpolation of zeroth, first, 
+        second or third order; ‘previous’ and ‘next’ simply return the previous or 
+        next value of the point) or as an integer specifying the order of the spline 
+        interpolator to use. Default is ‘linear’.
 
     Returns
     -------
     spec1 : Spectrum
-        A Spectrum  
+        Regridded spectrum 
     '''
+    x0 = self.x
+    y0 = self.y
+    f = interpolate.interp1d(x, y, kind=kind)
+    y1 = f(x1) 
+    spec1 = Spectrum(x1, y1)
+    if 'restfreq' in self.__dict__:
+        spec1.set_restfreq(self.restfreq)
+
+    return spec1
+    
     #def smooth():
     #def interpolate():
 

@@ -90,29 +90,45 @@ class Spectrum():
     '''
     Parameters
     ----------
-    x1 : '~numpy.ndarray'
+    x1 : '~astropy.Quantity'
         The frequency or velocity range that the spectrum is to be regridded
         to
     kind : string
         kind of scipy.interpolate
-        Specifies the kind of interpolation as a string (‘linear’, ‘nearest’, ‘zero’, 
-        ‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’, ‘next’, where ‘zero’, ‘slinear’, 
-        ‘quadratic’ and ‘cubic’ refer to a spline interpolation of zeroth, first, 
-        second or third order; ‘previous’ and ‘next’ simply return the previous or 
-        next value of the point) or as an integer specifying the order of the spline 
-        interpolator to use. Default is ‘linear’.
+        Specifies the kind of interpolation as a string (‘linear’, ‘nearest’, 
+        ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘previous’, ‘next’, where 
+        ‘zero’, ‘slinear’, ‘quadratic’ and ‘cubic’ refer to a spline 
+        interpolation of zeroth, first, second or third order; ‘previous’ and 
+        ‘next’ simply return the previous or next value of the point) or as 
+        an integer specifying the order of the spline interpolator to use. 
+        Default is ‘linear’.
 
     Returns
     -------
     spec1 : Spectrum
         Regridded spectrum 
     '''
-    x0 = self.x
+    if x1.unit in [u.Hz, u.kHz, u.MHz, u.GHz]:
+        if 'freq' not in self.__dict__.keys():
+            raise ValueError('No frequency in {0}'.format(self.__name__))
+        if x1.min() < self.freq.min() or x1.max() > self.freq.max():
+            raise ValueError('The new frequency is outside the original')
+        x0 = self.freq
+    elif x1.unit in [u.m/u.s, u.km/u.s]:
+        if 'velo' not in self.__dict__.keys():
+            raise ValueError('No velocity in {0}'.format(self.__name__))
+        if x1.min() < self.velo.min() or x1.max() > self.velo.max():
+            raise ValueError('The new velocity is outside the original')
+        x0 = self.velo
+    else:
+        raise ValueError('new x must be in frequency or velocity unit')
+
+    x1 = x1.to(x0.unit)
     y0 = self.y
-    f = interpolate.interp1d(x, y, kind=kind)
+    f = interpolate.interp1d(x0, y0, kind=kind)
     y1 = f(x1) 
     spec1 = Spectrum(x1, y1)
-    if 'restfreq' in self.__dict__:
+    if 'restfreq' in self.__dict__.keys():
         spec1.set_restfreq(self.restfreq)
 
     return spec1

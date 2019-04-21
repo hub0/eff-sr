@@ -133,7 +133,71 @@ class Spectrum():
 
     return spec1
     
-    #def smooth():
+    def smooth(self, window_len=11, window='hanning'):
+    '''
+    smooth the data (y) using a window with requested size.
+    
+    This method is based on the convolution of a scaled window with the signal.
+    The signal is prepared by introducing reflected copies of the signal 
+    (with the window size) in both ends so that transient parts are minimized
+    in the begining and end part of the output signal.
+    
+    Parameters
+    ----------
+    window_len : int
+        dimension of the smoothing window; should be an odd integer
+    window : str
+        the type of window from 'flat', 'hanning', 'hamming', 'bartlett', 
+        'blackman', flat window will produce a moving average smoothing.
+
+    Returns
+    -------
+    spec_smo : 'Spectrum'
+        smoothed spectrum
+        
+    Example
+    -------
+    >>> t=linspace(-2,2,0.1)
+    >>> x=sin(t)+randn(len(t))*0.1
+    >>> y=smooth(x)
+    
+    see also: 
+    numpy.hanning, numpy.hamming, numpy.bartlett, numpy.blackman, numpy.convolve
+    scipy.signal.lfilter
+ 
+    TODO: the window parameter could be the window itself if an array instead 
+        of a string
+    NOTE: length(output) != length(input), to correct this: return 
+        y[(window_len/2-1):-(window_len/2)] instead of just y.
+    '''
+    y0 = self.y
+    if y0.ndim != 1:
+        raise ValueError("smooth only accepts 1 dimension arrays.")
+
+    if y0.size < window_len:
+        raise ValueError("Input vector needs to be bigger than window size.")
+
+    if window_len<3:
+        return self
+
+    if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        raise ValueError("Window is one of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
+
+    s = np.r_[ 2 * y0[0] - y0[window_len - 1 : 0 : -1], y0, 
+        2 * y0[-1] - y0[-2 : -window_len - 1 : -1]]
+    if window == 'flat': #moving average
+        w = np.ones(window_len,'d')
+    else:
+        w = eval('np.'+window+'(window_len)')
+
+    y1 = np.convolve(w/w.sum(),s,mode='valid')
+    y1 = y1[int(window_len/2):-1*int(window_len/2)]
+
+    spec_smo = self 
+    spec_smo.y = y1
+
+    return spec_smo
+
     #def interpolate():
 
 

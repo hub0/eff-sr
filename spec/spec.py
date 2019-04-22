@@ -38,11 +38,14 @@ class Spectrum():
         self.x = x 
         self.y = y 
         
+        if 'restfreq' in kwargs.keys():
+            self.restfreq = kwargs['restfreq']
+        
         if x.unit in [u.Hz, u.kHz, u.MHz, u.GHz]:
             self.freq = x
             if 'restfreq' in kwargs.keys():
-                self.velo = (kwargs['restfreq'] - self.freq) / kwargs['restfreq'] \
-                            * const.c
+                self.velo = (kwargs['restfreq'] - self.freq) / \
+                            kwargs['restfreq'] * const.c
         elif x.unit in [u.m/u.s, u.km/u.s]:
             self.velo = x
             if 'restfreq' in kwargs.keys():
@@ -51,10 +54,62 @@ class Spectrum():
             raise ValueError('x must be in frequency or velocity unit')
 
 
+    def __str__(self):
+        selfstr = 'Value: {0}'.format(self.y)
+        if 'freq' in self.__dict__.keys():
+            selfstr = selfstr + '\nFrequency: {0}'.format(self.freq)
+        if 'velo' in self.__dict__.keys():
+            selfstr = selfstr + '\nVelocity: {0}'.format(self.velo)
+        if 'restfreq' in self.__dict__.keys():
+            selfstr = selfstr + '\nRest frequency: {0}'.format(self.restfreq)
+
+        return selfstr 
+
+
+    def __add__(self, other):
+        if 'freq' in self.__dict__.keys() and 'freq' in other.__dict__.keys():
+            x0 = self.freq
+            x1 = other.freq
+        elif 'velo' in self.__dict__.keys() and 'velo' in other.__dict__.keys():
+            x0 = self.velo
+            x1 = other.velo
+        else:
+            raise ValueError('two spectra have different x-axis')
+
+        y0 = self.y
+        y1 = other.interp(x0, kind='cubic').y
+
+        spec1 = Spectrum(x0, y0+y1)
+        
+        if 'restfreq' in self.__dict__.keys():
+            spec1.set_restfreq(self.restfreq)
+
+        return spec1
+
+    def __mul__(self, other):
+        if 'freq' in self.__dict__.keys() and 'freq' in other.__dict__.keys():
+            x0 = self.freq
+            x1 = other.freq
+        elif 'velo' in self.__dict__.keys() and 'velo' in other.__dict__.keys():
+            x0 = self.velo
+            x1 = other.velo
+        else:
+            raise ValueError('two spectra have different x-axis')
+
+        y0 = self.y
+        y1 = other.interp(x0, kind='cubic').y
+
+        spec1 = Spectrum(x0, y0*y1)
+        
+        if 'restfreq' in self.__dict__.keys():
+            spec1.set_restfreq(self.restfreq)
+
+        return spec1
+
 
     def set_restfreq(self, restfreq):
         '''
-        set rest frequency for self instance
+        set rest frequency for Spectrum instance
         '''
         self.restfreq = restfreq
         if 'freq' in self.__dict__.keys():

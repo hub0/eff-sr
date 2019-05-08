@@ -101,4 +101,18 @@ def calculate_nsl_sr(obsdir, obstime, pa, spec, tele_loc, nsl_pat,
     return nsl_sr
 
 
+def cal_extinction(zen):
+    '''
+    calculate the atmophere extinction for effelsberg
+
+    Parameters
+    ----------
+    zen: float
+        zenith angle
+
+    Returns
+    -------
+    extinc: float
+        the extinction coefficient
+    '''
     
